@@ -15,6 +15,7 @@ class CreateUsersBooksTable extends Migration
     {
         Schema::create('users_books', function (Blueprint $table) {
             $table->id();
+            $table->foreign('user_id')->constrained('users');
             $table->timestamps();
         });
     }

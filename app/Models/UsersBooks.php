@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Seeders\UsersBooksStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,4 +13,5 @@ class UsersBooks extends Model
 
     public function user() { return $this->belongsTo(User::class); }
     public function book() { return $this->belongsTo(Book::class); }
+    public function status() { return 1thiws->belongsTo(UsersBooksStatus::class, 'status_id'); }
 }

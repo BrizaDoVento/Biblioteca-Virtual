@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Models\UsersBookStatus;
 
 class UsersBookController extends Controller
 {
+    // Empréstimo
     public function store(Request $request)
     {
         $request->validate([
@@ -20,25 +22,23 @@ class UsersBookController extends Controller
         $user = User::findOrFail($request->user_id);
         $bookId = $request->book_id;
 
-        // Conta empréstimos ativos
         $ativos = UsersBook::where('user_id', $user->id)
             ->where('status_id', UsersBookStatus::EMPRESTADO)
             ->count();
 
         if ($ativos >= 2) {
-            return back()->withErrors('Usuário já possui 2 livros emprestados.');
+            return back()->withErrors('Você já possui 2 livros emprestados.');
         }
 
         try {
             DB::transaction(function() use ($user, $bookId) {
-                // trava linha do livro para evitar race condition
                 $book = Book::where('id', $bookId)->lockForUpdate()->firstOrFail();
 
                 if ($book->amount < 1) {
                     throw new \Exception('Livro sem estoque disponível.');
                 }
 
-                $loan = UsersBook::create([
+                UsersBook::create([
                     'user_id' => $user->id,
                     'book_id' => $book->id,
                     'status_id' => UsersBookStatus::EMPRESTADO,
@@ -55,17 +55,17 @@ class UsersBookController extends Controller
         return back()->with('success','Livro emprestado com sucesso.');
     }
 
+    // Devolução
     public function devolver($id)
     {
         $loan = UsersBook::findOrFail($id);
 
         if ($loan->status_id != UsersBookStatus::EMPRESTADO) {
-            return back()->withErrors('Empréstimo inválido para devolução.');
+            return back()->withErrors('Empréstimo inválido.');
         }
 
         DB::transaction(function() use ($loan) {
             $loan->update(['status_id' => UsersBookStatus::DEVOLVIDO]);
-            // trava o livro antes de incrementar
             $book = Book::where('id', $loan->book_id)->lockForUpdate()->first();
             $book->increment('amount');
         });
@@ -73,11 +73,11 @@ class UsersBookController extends Controller
         return back()->with('success','Livro devolvido com sucesso.');
     }
 
+    // Empréstimos atrasados
     public function atrasados()
     {
-        $hoje = now()->toDateString();
-        $atrasados = UsersBook::where('end_date', '<', $hoje)
-            ->where('status_id', UsersBookStatus::EMPRESTADO)
+        $atrasados = UsersBook::where('status_id', UsersBookStatus::EMPRESTADO)
+            ->where('end_date', '<', now())
             ->with(['user','book'])
             ->get();
 

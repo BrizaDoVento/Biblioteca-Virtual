@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsersBookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::post('/loans', [UsersBookController::class, 'store'])->name('loans.store');
+Route::post('/loans/{id}/return', [UsersBookController::class, 'devolver'])->name('loans.return');
+Route::get('/loans/overdue', [UsersBookController::class, 'atrasados'])->name('loans.overdue');

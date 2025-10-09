@@ -3,17 +3,15 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\UsersBookStatus;
 
-
-class UsersBooksStatus extends Seeder
+class UsersBooksStatusSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
-        //
+        UsersBookStatus::insert([
+            ['description' => 'Emprestado'],
+            ['description' => 'Devolvido'],
+        ]);
     }
 }

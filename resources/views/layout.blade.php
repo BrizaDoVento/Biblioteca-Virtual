@@ -1,49 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>@yield('title', 'Biblioteca Virtual')</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    @extends ('layout')
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url('/') }}">Biblioteca Virtual</a>
+            <div>
+                <a href="{{ route('books.index') }}" class="btn btn-outline-light me-2">Livros</a>
+                <a href="{{ route('loans.index') }}" class="btn btn-outline-light me-2">Meus Empréstimos</a>
+                <a href="{{ route('loans.overdue') }}" class="btn btn-outline-warning">Atrasados</a>
+            </div>
+        </div>
+    </nav>
 
-    @section('title', 'Meus Empréstimos')
+    <div class="container">
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
-    @section('content')
-    <h1>Meus Empréstimos</h1>
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $erro)
+                        <li>{{ $erro }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Livro</th>
-                <th>Status</th>
-                <th>Início</th>
-                <th>Devolução</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($loans as $loan)
-            <tr>
-                <td>{{ @loan->book->title }}</td>
-                <td>{{ @loan->status->description }}</td>
-                <td>{{ @loan->start_date }}</td>
-                <td>{{ @loan->end_date }}</td>
-                <td>
-                    @if($loan->status_id == \App\Models\UsersBooksStatus::EMPRESTADO)
-                    <form action="{{ route('loans.return', $loans->id) }}" method="POST">
-                        @csrf<button type="submit" class="btn btn-sm btn-success">Devolver</button>
-                    </form>
-                    @else
-                    <span class="text-secondary">Devolvido</span>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @endsection
+        @yield('content')
+    </div>
 </body>
 </html>

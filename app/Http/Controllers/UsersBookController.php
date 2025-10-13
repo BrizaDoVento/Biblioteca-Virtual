@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Book;
 use App\Models\UsersBook;
+use App\Models\UsersBooks;
 use App\Models\UsersBookStatus;
 
 class UsersBookController extends Controller
@@ -22,7 +23,7 @@ class UsersBookController extends Controller
         $user = User::findOrFail($request->user_id);
         $bookId = $request->book_id;
 
-        $ativos = UsersBook::where('user_id', $user->id)
+        $ativos = UsersBooks::where('user_id', $user->id)
             ->where('status_id', UsersBookStatus::EMPRESTADO)
             ->count();
 
@@ -38,7 +39,7 @@ class UsersBookController extends Controller
                     throw new \Exception('Livro sem estoque disponível.');
                 }
 
-                UsersBook::create([
+                UsersBooks::create([
                     'user_id' => $user->id,
                     'book_id' => $book->id,
                     'status_id' => UsersBookStatus::EMPRESTADO,
@@ -58,7 +59,7 @@ class UsersBookController extends Controller
     // Devolução
     public function devolver($id)
     {
-        $loan = UsersBook::findOrFail($id);
+        $loan = UsersBooks::findOrFail($id);
 
         if ($loan->status_id != UsersBookStatus::EMPRESTADO) {
             return back()->withErrors('Empréstimo inválido.');
@@ -76,7 +77,7 @@ class UsersBookController extends Controller
     // Empréstimos atrasados
     public function atrasados()
     {
-        $atrasados = UsersBook::where('status_id', UsersBookStatus::EMPRESTADO)
+        $atrasados = UsersBooks::where('status_id', UsersBookStatus::EMPRESTADO)
             ->where('end_date', '<', now())
             ->with(['user','book'])
             ->get();

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Book;
-use App\Models\UsersBook;
 use App\Models\UsersBooks;
 use App\Models\UsersBookStatus;
 
@@ -83,5 +82,12 @@ class UsersBookController extends Controller
             ->get();
 
         return view('loans.atrasados', compact('atrasados'));
+    }
+
+    public function index()
+    {
+        $loans = UsersBooks::with(['user', 'book', 'status'])->get();
+
+        return view('loans.index', compact('loans'));
     }
 }

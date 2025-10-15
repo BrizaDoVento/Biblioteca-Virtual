@@ -9,12 +9,12 @@ use App\Http\Controllers\UsersBookController;
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Aqui registramos as rotas do sistema de biblioteca.
-| A rota inicial redireciona para a lista de livros.
+| Aqui ficam todas as rotas da Biblioteca Virtual.
+| A rota principal redireciona para /books.
 |
 */
 
-// Rota inicial → redireciona para a listagem de livros
+// Página inicial → redireciona para lista de livros
 Route::get('/', function () {
     return redirect()->route('books.index');
 });
@@ -22,7 +22,16 @@ Route::get('/', function () {
 // Listagem de livros
 Route::get('/books', [BookController::class, 'index'])->name('books.index');
 
-// Empréstimos
-Route::post('/loans', [UsersBookController::class, 'store'])->name('loans.store');
-Route::post('/loans/{id}/return', [UsersBookController::class, 'devolver'])->name('loans.return');
-Route::get('/loans/overdue', [UsersBookController::class, 'atrasados'])->name('loans.overdue');
+Route::prefix('loans')->group(function () {
+    // Página principal - lista de empréstimos
+    Route::get('/', [UsersBookController::class, 'index'])->name('loans.index');
+
+    // Registrar novo empréstimo
+    Route::post('/', [UsersBookController::class, 'store'])->name('loans.store');
+
+    // Devolver um livro emprestado
+    Route::post('/{id}/return', [UsersBookController::class, 'devolver'])->name('loans.return');
+
+    // Listar livros atrasados
+    Route::get('/overdue', [UsersBookController::class, 'atrasados'])->name('loans.overdue');
+});

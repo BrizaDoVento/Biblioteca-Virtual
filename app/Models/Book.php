@@ -11,27 +11,24 @@ class Book extends Model
 
     protected $fillable = [
         'title',
+        'author_id',
         'category_id',
         'language_id',
-        'author_id',
-        'amount'
+        'amount',
     ];
 
-    // Relação com a categoria do livro
-    public function category()
-    {
-        return $this->belongsTo(BookCategory::class, 'category_id');
-    }
-
-    // Relação com o idioma do livro
-    public function language()
-    {
-        return $this->belongsTo(BookLanguage::class, 'language_id');
-    }
-
-    // Relação com o autor
     public function author()
     {
-        return $this->belongsTo(BookAuthors::class, 'author_id');
+        return $this->belongsTo(BookAuthors::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(BookCategory::class);
+    }
+
+    public function language()
+    {
+        return $this->belongsTo(BookLanguage::class);
     }
 }

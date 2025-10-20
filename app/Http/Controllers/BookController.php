@@ -29,13 +29,25 @@ class BookController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'author_id' => 'required|exists:book_authors,id',
-            'category_id' => 'required|exists:book_categories,id',
-            'language_id' => 'required|exists:book_languages,id',
+            'author' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'language' => 'required|string|max:255',
             'amount' => 'required|integer|min:1',
         ]);
 
-        Book::create($validated);
+        // Cria ou busca o autor digitado
+        $author = \App\Models\BookAuthors::firstOrCreate(['description' => $validated['author']]);
+        $category = \App\Models\BookCategory::firstOrCreate(['description' => $validated['category']]);
+        $language = \App\Models\BookLanguage::firstOrCreate(['description' => $validated['language']]);
+
+        // Cria o livro
+        \App\Models\Book::create([
+            'title' => $validated['title'],
+            'author_id' => $author->id,
+            'category_id' => $category->id,
+            'language_id' => $language->id,
+            'amount' => $validated['amount'],
+        ]);
 
         return redirect()->route('book-management.index')->with('success', 'Livro cadastrado com sucesso!');
     }
@@ -53,13 +65,22 @@ class BookController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'author_id' => 'required|exists:book_authors,id',
-            'category_id' => 'required|exists:book_categories,id',
-            'language_id' => 'required|exists:book_languages,id',
+            'author' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'language' => 'required|string|max:255',
             'amount' => 'required|integer|min:1',
         ]);
+        $author = \App\Models\BookAuthors::firstOrCreate(['description' => $validated['author']]);
+        $category = \App\Models\BookCategory::firstOrCreate(['description' => $validated['category']]);
+        $language = \App\Models\BookLanguage::firstOrCreate(['description' => $validated['language']]);
 
-        $book->update($validated);
+        $book->update([
+            'title' => $validated['title'],
+            'author_id' => $author->id,
+            'category_id' => $category->id,
+            'language_id' => $language->id,
+            'amount' => $validated['amount'],
+        ]);
 
         return redirect()->route('book-management.index')->with('success', 'Livro atualizado com sucesso!');
     }

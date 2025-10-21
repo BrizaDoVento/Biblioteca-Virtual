@@ -50,3 +50,11 @@ Route::prefix('book-management')->group(function () {
     Route::put('/{book}', [BookController::class, 'update'])->name('book-management.update');
     Route::delete('/{book}', [BookController::class, 'destroy'])->name('book-management.destroy');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/loans', [UsersBookController::class, 'index'])->name('loans.index');
+    Route::get('/loans/create', [UsersBookController::class, 'create'])->name('loans.create');
+    Route::post('/loans', [UsersBookController::class, 'store'])->name('loans.store');
+    Route::post('/loans/{id}/return', [UsersBookController::class, 'devolver'])->name('loans.return');
+    Route::get('/loans/overdue', [UsersBookController::class, 'atrasados'])->name('loans.overdue');
+});

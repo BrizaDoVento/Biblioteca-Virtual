@@ -2,92 +2,102 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\User;
 use App\Models\Book;
 use App\Models\UsersBooks;
 use App\Models\UsersBookStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class UsersBookController extends Controller
 {
-    // Empréstimo
+    // Listar todos os empréstimos (usuário logado)
+    public function index()
+    {
+        $user = Auth::user();
+        $loans = UsersBooks::with(['book', 'status'])
+            ->where('user_id', $user->id)
+            ->orderBy('start_date', 'desc')
+            ->get();
+
+        return view('loans.index', compact('loans'));
+    }
+
+    // Mostrar formulário de empréstimo
+    public function create()
+    {
+        $books = Book::where('amount', '>', 0)->get();
+        return view('loans.create', compact('books'));
+    }
+
+    // Registrar novo empréstimo
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
             'book_id' => 'required|exists:books,id',
         ]);
 
-        $user = User::findOrFail($request->user_id);
-        $bookId = $request->book_id;
+        $user = Auth::user();
 
-        $ativos = UsersBooks::where('user_id', $user->id)
-            ->where('status_id', UsersBookStatus::EMPRESTADO)
+        // Verifica limite de 2 livros emprestados
+        $activeLoans = UsersBooks::where('user_id', $user->id)
+            ->whereHas('status', fn($q) => $q->where('description', 'Emprestado'))
             ->count();
 
-        if ($ativos >= 2) {
-            return back()->withErrors('Você já possui 2 livros emprestados.');
+        if ($activeLoans >= 2) {
+            return back()->with('error', 'Você já possui 2 livros emprestados.');
         }
 
-        try {
-            DB::transaction(function() use ($user, $bookId) {
-                $book = Book::where('id', $bookId)->lockForUpdate()->firstOrFail();
+        $book = Book::findOrFail($request->book_id);
 
-                if ($book->amount < 1) {
-                    throw new \Exception('Livro sem estoque disponível.');
-                }
-
-                UsersBooks::create([
-                    'user_id' => $user->id,
-                    'book_id' => $book->id,
-                    'status_id' => UsersBookStatus::EMPRESTADO,
-                    'start_date' => now()->toDateString(),
-                    'end_date' => now()->addDays(7)->toDateString(),
-                ]);
-
-                $book->decrement('amount');
-            });
-        } catch (\Exception $e) {
-            return back()->withErrors($e->getMessage());
+        if ($book->amount <= 0) {
+            return back()->with('error', 'Não há estoque disponível para este livro.');
         }
 
-        return back()->with('success','Livro emprestado com sucesso.');
+        // Reduz estoque
+        $book->decrement('amount');
+
+        // Cria empréstimo
+        UsersBooks::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'status_id' => UsersBookStatus::where('description', 'Emprestado')->first()->id,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(7),
+        ]);
+
+        return redirect()->route('loans.index')->with('success', 'Livro emprestado com sucesso!');
     }
 
-    // Devolução
+    // Devolver livro
     public function devolver($id)
     {
         $loan = UsersBooks::findOrFail($id);
 
-        if ($loan->status_id != UsersBookStatus::EMPRESTADO) {
-            return back()->withErrors('Empréstimo inválido.');
+        if ($loan->status->description === 'Devolvido') {
+            return back()->with('info', 'Este livro já foi devolvido.');
         }
 
-        DB::transaction(function() use ($loan) {
-            $loan->update(['status_id' => UsersBookStatus::DEVOLVIDO]);
-            $book = Book::where('id', $loan->book_id)->lockForUpdate()->first();
-            $book->increment('amount');
-        });
+        $loan->update([
+            'status_id' => UsersBookStatus::where('description', 'Devolvido')->first()->id,
+        ]);
 
-        return back()->with('success','Livro devolvido com sucesso.');
+        // Aumenta estoque
+        $loan->book->increment('amount');
+
+        return back()->with('success', 'Livro devolvido com sucesso!');
     }
 
-    // Empréstimos atrasados
+    // Listar atrasados
     public function atrasados()
     {
-        $atrasados = UsersBooks::where('status_id', UsersBookStatus::EMPRESTADO)
-            ->where('end_date', '<', now())
-            ->with(['user','book'])
+        $today = Carbon::now();
+
+        $overdue = UsersBooks::with(['book', 'user'])
+            ->whereHas('status', fn($q) => $q->where('description', 'Emprestado'))
+            ->where('end_date', '<', $today)
             ->get();
 
-        return view('loans.atrasados', compact('atrasados'));
-    }
-
-    public function index()
-    {
-        $loans = UsersBooks::with(['user', 'book', 'status'])->get();
-
-        return view('loans.index', compact('loans'));
+        return view('loans.overdue', compact('overdue'));
     }
 }

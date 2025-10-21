@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookLanguage extends Model
 {
-    use HasFactory;
+    protected $fillable = ['description'];
 }

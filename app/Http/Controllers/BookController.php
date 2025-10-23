@@ -10,84 +10,107 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
+    /**
+     * Exibe a lista de livros.
+     */
     public function index()
     {
         $books = Book::with(['author', 'category', 'language'])->get();
+
         return view('book-management.index', compact('books'));
     }
 
+    /**
+     * Exibe o formulário de criação de um novo livro.
+     */
     public function create()
     {
-        $authors = BookAuthors::all();
-        $categories = BookCategory::all();
-        $languages = BookLanguage::all();
-
-        return view('book-management.create', compact('authors', 'categories', 'languages'));
+        return view('book-management.create');
     }
 
+    /**
+     * Armazena um novo livro no banco.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'language' => 'required|string|max:255',
-            'amount' => 'required|integer|min:1',
+            'author_name' => 'required|string|max:255',
+            'category_name' => 'required|string|max:255',
+            'language_name' => 'required|string|max:255',
+            'amount' => 'required|integer|min:0',
         ]);
 
-        // Cria ou busca o autor digitado
-        $author = \App\Models\BookAuthors::firstOrCreate(['description' => $validated['author']]);
-        $category = \App\Models\BookCategory::firstOrCreate(['description' => $validated['category']]);
-        $language = \App\Models\BookLanguage::firstOrCreate(['description' => $validated['language']]);
+        // 🔹 Cria ou busca o autor
+        $author = BookAuthors::firstOrCreate(['name' => $request->author_name]);
 
-        // Cria o livro
-        \App\Models\Book::create([
-            'title' => $validated['title'],
+        // 🔹 Cria ou busca a categoria
+        $category = BookCategory::firstOrCreate(['name' => $request->category_name]);
+
+        // 🔹 Cria ou busca o idioma
+        $language = BookLanguage::firstOrCreate(['name' => $request->language_name]);
+
+        // 🔹 Cria o livro
+        Book::create([
+            'title' => $request->title,
             'author_id' => $author->id,
             'category_id' => $category->id,
             'language_id' => $language->id,
-            'amount' => $validated['amount'],
+            'amount' => $request->amount,
         ]);
 
-        return redirect()->route('book-management.index')->with('success', 'Livro cadastrado com sucesso!');
+        return redirect()->route('book-management.index')
+            ->with('success', 'Livro cadastrado com sucesso!');
     }
 
+    /**
+     * Exibe o formulário de edição de um livro.
+     */
     public function edit(Book $book)
     {
-        $authors = BookAuthors::all();
-        $categories = BookCategory::all();
-        $languages = BookLanguage::all();
-
-        return view('book-management.edit', compact('book', 'authors', 'categories', 'languages'));
+        $book->load(['author', 'category', 'language']);
+        return view('book-management.edit', compact('book'));
     }
 
+    /**
+     * Atualiza um livro existente.
+     */
     public function update(Request $request, Book $book)
     {
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'language' => 'required|string|max:255',
-            'amount' => 'required|integer|min:1',
+            'author_name' => 'required|string|max:255',
+            'category_name' => 'required|string|max:255',
+            'language_name' => 'required|string|max:255',
+            'amount' => 'required|integer|min:0',
         ]);
-        $author = \App\Models\BookAuthors::firstOrCreate(['description' => $validated['author']]);
-        $category = \App\Models\BookCategory::firstOrCreate(['description' => $validated['category']]);
-        $language = \App\Models\BookLanguage::firstOrCreate(['description' => $validated['language']]);
 
+        // 🔹 Atualiza ou cria as relações
+        $author = BookAuthors::firstOrCreate(['name' => $request->author_name]);
+        $category = BookCategory::firstOrCreate(['name' => $request->category_name]);
+        $language = BookLanguage::firstOrCreate(['name' => $request->language_name]);
+
+        // 🔹 Atualiza o livro
         $book->update([
-            'title' => $validated['title'],
+            'title' => $request->title,
             'author_id' => $author->id,
             'category_id' => $category->id,
             'language_id' => $language->id,
-            'amount' => $validated['amount'],
+            'amount' => $request->amount,
         ]);
 
-        return redirect()->route('book-management.index')->with('success', 'Livro atualizado com sucesso!');
+        return redirect()->route('book-management.index')
+            ->with('success', 'Livro atualizado com sucesso!');
     }
 
+    /**
+     * Remove um livro do banco.
+     */
     public function destroy(Book $book)
     {
         $book->delete();
-        return redirect()->route('book-management.index')->with('success', 'Livro excluído com sucesso!');
+
+        return redirect()->route('book-management.index')
+            ->with('success', 'Livro excluído com sucesso!');
     }
 }

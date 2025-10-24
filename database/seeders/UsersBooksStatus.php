@@ -3,13 +3,13 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\UsersBookStatus;
+use Illuminate\Support\Facades\DB;
 
 class UsersBooksStatus extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        UsersBookStatus::create([
+        DB::table('users_books_status')->insert([
             ['description' => 'Emprestado'],
             ['description' => 'Devolvido'],
         ]);

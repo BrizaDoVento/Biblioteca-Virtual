@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UsersBookStatus extends Model
 {
+    protected $table = "users_books_status";
     protected $fillable = ['description'];
 
     const EMPRESTADO = 1;

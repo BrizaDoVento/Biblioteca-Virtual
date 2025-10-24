@@ -30,10 +30,10 @@
     {{-- Navbar --}}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ route('books.index') }}">📚 Biblioteca Virtual</a>
+            <a class="navbar-brand fw-bold" href="{{ route('book-management.index') }}">📚 Biblioteca Virtual</a>
 
             <div class="d-flex">
-                <a href="{{ route('books.index') }}" class="btn btn-outline-light btn-sm me-2">Livros</a>
+                <a href="{{ route('book-management.index') }}" class="btn btn-outline-light btn-sm me-2">Livros</a>
                 <a href="{{ route('loans.index') }}" class="btn btn-outline-light btn-sm me-2">Empréstimos</a>
                 <a href="{{ route('loans.overdue') }}" class="btn btn-outline-warning btn-sm">Atrasados</a>
             </div>

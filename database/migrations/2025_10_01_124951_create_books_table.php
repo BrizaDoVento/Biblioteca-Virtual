@@ -7,17 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-    {
-        Schema::create('books', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->foreignId('category_id')->constrained('book_categories');
-            $table->foreignId('language_id')->constrained('book_languages');
-            $table->foreignId('author_id')->constrained('book_authors');
-            $table->integer('amount')->default(0);
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('books', function (Blueprint $table) {
+        $table->id();
+        $table->string('title');
+        $table->string('author')->nullable();
+        $table->string('category')->nullable();
+        $table->string('language')->nullable();
+        $table->text('description')->nullable();
+        $table->string('status')->default('disponível');
+        $table->integer('amount')->default(1); // se quiser controlar estoque
+        $table->timestamps();
+    });
+}
 
     public function down(): void
     {

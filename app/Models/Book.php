@@ -9,26 +9,26 @@ class Book extends Model
 {
     use HasFactory;
 
+    // Campos permitidos para mass assignment
     protected $fillable = [
         'title',
-        'author_id',
-        'category_id',
-        'language_id',
+        'author',
+        'category',
+        'language',
+        'description',
+        'status',
         'amount',
     ];
 
-    public function author()
+    // Relacionamento com empréstimos (UsersBooks)
+    public function loans()
     {
-        return $this->belongsTo(BookAuthors::class);
+        return $this->hasMany(UsersBooks::class, 'book_id');
     }
 
-    public function category()
+    // Opcional: escopo para livros disponíveis
+    public function scopeAvailable($query)
     {
-        return $this->belongsTo(BookCategory::class);
-    }
-
-    public function language()
-    {
-        return $this->belongsTo(BookLanguage::class);
+        return $query->where('amount', '>', 0);
     }
 }

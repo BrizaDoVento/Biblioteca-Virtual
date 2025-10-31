@@ -13,60 +13,57 @@ class UsersBookController extends Controller
 {
     public function index()
     {
-        $loans = UsersBooks::with(['book', 'user', 'status'])->orderBy('start_date', 'desc')->get();
-        $books = Book::where('amount', '>', 0)->get();
-        $users = User::all();
+        $loans = \App\Models\UsersBooks::with(['book', 'user', 'status'])->orderBy('start_date','desc')->get();
+        $books = \App\Models\Book::orderBy('title')->get();
+        $users = \App\Models\User::orderBy('name')->get();
 
-        return view('loans.index', compact('loans', 'books', 'users'));
+        return view('loans.index', compact('loans','books','users'));
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'book_id' => 'required|exists:books,id',
-        ]);
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'book_id' => 'required|exists:books,id',
+    ]);
 
-        $userId = $request->user_id;
-        $book = Book::find($request->book_id);
+    $userId = $request->input('user_id');
+    $bookId = $request->input('book_id');
 
-        // Verifica estoque
-        if ($book->amount < 1) {
-            return redirect()->back()->with('error', 'Este livro não está disponível no momento.');
-        }
-
-        // Verifica se o usuário já tem 2 empréstimos ativos
-        $activeLoans = UsersBooks::where('user_id', $userId)
-            ->whereHas('status', function ($query) {
-                $query->where('description', 'Emprestado');
-            })
-            ->count();
-
-        if ($activeLoans >= 2) {
-            return redirect()->back()->with('error', 'Usuário já possui 2 livros emprestados.');
-        }
-
-        // Obtém o status "Emprestado"
-        $statusEmprestado = UsersBookStatus::where('description', 'Emprestado')->first();
-
-        if (!$statusEmprestado) {
-            return redirect()->back()->with('error', 'Status "Emprestado" não encontrado. Verifique a seeder.');
-        }
-
-        // Cria o empréstimo
-        UsersBooks::create([
-            'user_id' => $userId,
-            'book_id' => $book->id,
-            'status_id' => $statusEmprestado->id,
-            'start_date' => now(),
-            'end_date' => now()->addDays(7),
-        ]);
-
-        // Diminui o estoque
-        $book->decrement('amount');
-
-        return redirect()->route('loans.index')->with('success', 'Livro emprestado com sucesso!');
+    $book = \App\Models\Book::find($bookId);
+    if (!$book || $book->amount < 1) {
+        return redirect()->back()->with('error','Livro sem estoque disponível.');
     }
+
+    // se usa tabela users_books_status: checar "Emprestado"
+    $status = \App\Models\UsersBookStatus::where('description','Emprestado')->first();
+    if (!$status) {
+        return redirect()->back()->with('error','Status "Emprestado" não encontrado. Rode a seeder.');
+    }
+
+    // verifica limite de 2 livros ativos para o usuário
+    $activeLoans = \App\Models\UsersBooks::where('user_id', $userId)
+        ->where('status_id', $status->id)
+        ->count();
+
+    if ($activeLoans >= 2) {
+        return redirect()->back()->with('error','Usuário já tem 2 livros emprestados.');
+    }
+
+    // cria empréstimo
+    \App\Models\UsersBooks::create([
+        'user_id' => $userId,
+        'book_id' => $book->id,
+        'status_id' => $status->id,
+        'start_date' => now(),
+        'end_date' => now()->addDays(7),
+    ]);
+
+    // decrementa estoque
+    $book->decrement('amount');
+
+    return redirect()->route('loans.index')->with('success','Livro emprestado com sucesso!');
+}
 
     public function devolver($id)
     {

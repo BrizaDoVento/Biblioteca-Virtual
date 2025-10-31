@@ -8,16 +8,16 @@ use App\Models\Book;
 class BookController extends Controller
 {
     /**
-     * Exibe a lista de livros cadastrados
+     * Exibe a lista de todos os livros cadastrados.
      */
     public function index()
     {
-        $books = Book::orderBy('title')->get();
+        $books = Book::orderBy('title', 'asc')->get();
         return view('books.index', compact('books'));
     }
 
     /**
-     * Mostra o formulário de criação de um novo livro
+     * Exibe o formulário de criação de um novo livro.
      */
     public function create()
     {
@@ -25,32 +25,28 @@ class BookController extends Controller
     }
 
     /**
-     * Armazena um novo livro no banco de dados
+     * Armazena um novo livro no banco de dados.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'author' => 'nullable|string|max:255',
-            'category' => 'nullable|string|max:255',
-            'language' => 'nullable|string|max:100',
+            'author' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'language' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'amount' => 'required|integer|min:0',
         ]);
 
-        $book = new Book();
-        $book->title = $request->title;
-        $book->author = $request->author;
-        $book->category = $request->category;
-        $book->language = $request->language;
-        $book->description = $request->description;
-        $book->status = 'disponível'; // Padrão ao criar
-        $book->save();
+        $validated['status'] = 'disponível';
 
-        return redirect()->route('books.index')->with('success', 'Livro adicionado com sucesso!');
+        Book::create($validated);
+
+        return redirect()->route('books.index')->with('success', 'Livro cadastrado com sucesso!');
     }
 
     /**
-     * Mostra o formulário de edição de um livro existente
+     * Exibe o formulário de edição de um livro.
      */
     public function edit($id)
     {
@@ -59,32 +55,28 @@ class BookController extends Controller
     }
 
     /**
-     * Atualiza os dados de um livro
+     * Atualiza os dados de um livro existente.
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $book = Book::findOrFail($id);
+
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'author' => 'nullable|string|max:255',
-            'category' => 'nullable|string|max:255',
-            'language' => 'nullable|string|max:100',
+            'author' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'language' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'amount' => 'required|integer|min:0',
         ]);
 
-        $book = Book::findOrFail($id);
-        $book->update([
-            'title' => $request->title,
-            'author' => $request->author,
-            'category' => $request->category,
-            'language' => $request->language,
-            'description' => $request->description,
-        ]);
+        $book->update($validated);
 
         return redirect()->route('books.index')->with('success', 'Livro atualizado com sucesso!');
     }
 
     /**
-     * Remove um livro do banco de dados
+     * Remove um livro do sistema.
      */
     public function destroy($id)
     {
@@ -92,6 +84,11 @@ class BookController extends Controller
 
         if (!$book) {
             return redirect()->route('books.index')->with('error', 'Livro não encontrado.');
+        }
+
+        // Verifica se o livro está emprestado
+        if ($book->status === 'emprestado') {
+            return redirect()->route('books.index')->with('error', 'Não é possível excluir um livro emprestado.');
         }
 
         $book->delete();

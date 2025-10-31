@@ -41,6 +41,18 @@
         </div>
         <button type="submit" class="btn btn-primary">Atualizar</button>
         <a href="{{ route('books.index') }}" class="btn btn-secondary">Cancelar</a>
+        <div class="form-group mt-3">
+    <label for="amount">Quantidade disponível:</label>
+    <input
+        type="number"
+        name="amount"
+        id="amount"
+        class="form-control"
+        value="{{ old('amount', $book->amount) }}"
+        min="0"
+        required
+    >
+</div>
     </form>
 </div>
 @endsection

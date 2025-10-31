@@ -40,6 +40,18 @@
         </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
         <a href="{{ route('books.index') }}" class="btn btn-secondary">Cancelar</a>
+        <div class="form-group mt-3">
+    <label for="amount">Quantidade disponível:</label>
+    <input
+        type="number"
+        name="amount"
+        id="amount"
+        class="form-control"
+        value="{{ old('amount', 1) }}"
+        min="0"
+        required
+    >
+</div>
     </form>
 </div>
 @endsection

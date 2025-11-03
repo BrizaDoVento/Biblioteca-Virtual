@@ -83,7 +83,7 @@
                                 <td>{{ \Carbon\Carbon::parse($loan->end_date)->format('d/m/Y') }}</td>
                                 <td>{{ $loan->status->description ?? 'Desconhecido' }}</td>
                                 <td>
-                                    @if($loan->status && $loan->status->description === 'Emprestado')
+                                    @if($loan->status && $loan->status === 'Emprestado')
                                         <form action="{{ route('loans.return', $loan->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-warning">Devolver</button>

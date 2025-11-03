@@ -3,52 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Biblioteca Virtual')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        nav.navbar {
-            margin-bottom: 20px;
-        }
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #fff;
-            border-top: 1px solid #ddd;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+    <title>Biblioteca Virtual</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <!-- Barra de navegação -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+<body class="bg-light">
+
+    {{-- Navbar Principal --}}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ route('books.index') }}">📚 Biblioteca Virtual</a>
+            <a class="navbar-brand fw-bold" href="{{ url('/') }}">📚 Biblioteca Virtual</a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a href="{{ route('books.index') }}" class="nav-link">Livros</a></li>
-                    <li class="nav-item"><a href="{{ route('loans.index') }}" class="nav-link">Empréstimos</a></li>
-                    <li class="nav-item"><a href="{{ route('loans.overdue') }}" class="nav-link text-danger">Atrasados</a></li>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    {{-- Livros --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('books.*') ? 'active' : '' }}" href="{{ route('books.index') }}">
+                            Livros
+                        </a>
+                    </li>
+
+                    {{-- Empréstimos --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('loans.*') ? 'active' : '' }}" href="{{ route('loans.index') }}">
+                            Empréstimos
+                        </a>
+                    </li>
+
+                    {{-- Usuários --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                            Usuários
+                        </a>
+                    </li>
+
                 </ul>
             </div>
         </div>
     </nav>
 
-    <main class="container mb-5 pb-5">
-        @yield('content')
-    </main>
+    {{-- Conteúdo principal --}}
+    <div class="container">
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-    <footer>
-        <p class="mb-0">Desenvolvido por Marcelo Eike • {{ date('Y') }}</p>
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- Área para exibir o conteúdo das views --}}
+        @yield('content')
+    </div>
+
+    <footer class="bg-primary text-white text-center py-3 mt-5">
+        <small>Biblioteca Virtual © {{ date('Y') }} — Desenvolvido por Marcelo Eike</small>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

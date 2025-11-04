@@ -13,7 +13,7 @@ class UsersBookController extends Controller
 {
     public function index()
     {
-        $loans = \App\Models\UsersBooks::with(['book', 'user', 'status'])->orderBy('start_date','desc')->get();
+        $loans = \App\Models\UsersBooks::with(['book', 'user', 'getStatus'])->orderBy('start_date','desc')->get();
         $books = \App\Models\Book::orderBy('title')->get();
         $users = \App\Models\User::orderBy('name')->get();
 

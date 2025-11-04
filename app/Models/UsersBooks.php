@@ -12,5 +12,5 @@ class UsersBooks extends Model
 
     public function book() { return $this->belongsTo(Book::class,'book_id'); }
     public function user() { return $this->belongsTo(User::class,'user_id'); }
-    public function status() { return $this->belongsTo(UsersBookStatus::class,'status_id'); }
+    public function getStatus() { return $this->belongsTo(UsersBookStatus::class,'status_id'); }
 }

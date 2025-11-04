@@ -76,14 +76,14 @@
                     </thead>
                     <tbody>
                         @foreach($loans as $loan)
-                            <tr @if(isset($loan->end_date) && $loan->end_date < now() && $loan->status?->description === 'Emprestado') class="table-danger" @endif>
+                            <tr @if(isset($loan->end_date) && $loan->end_date < now() && $loan->getStatus?->description === 'Emprestado') class="table-danger" @endif>
                                 <td>{{ $loan->user->name ?? '—' }}</td>
                                 <td>{{ $loan->book->title ?? '—' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($loan->start_date)->format('d/m/Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($loan->end_date)->format('d/m/Y') }}</td>
-                                <td>{{ $loan->status->description ?? 'Desconhecido' }}</td>
+                                <td>{{ $loan->getStatus->description ?? 'Desconhecido' }}</td>
                                 <td>
-                                    @if($loan->status && $loan->status === 'Emprestado')
+                                    @if($loan->getStatus && $loan->getStatus === 'Emprestado')
                                         <form action="{{ route('loans.return', $loan->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-warning">Devolver</button>

@@ -43,6 +43,10 @@
                 <label>Descrição</label>
                 <textarea name="description" class="form-control"></textarea>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Capa do Livro</label>
+                <input type="file" name="cover_image" class="form-control">
+            </div>
             <button type="submit" class="btn btn-primary">Salvar</button>
             <a href="{{ route('books.index') }}" class="btn btn-secondary">Cancelar</a>
             <div class="form-group mt-3">

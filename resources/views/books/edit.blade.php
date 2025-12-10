@@ -24,6 +24,22 @@
             <input type="text" name="title" class="form-control" value="{{ $book->title }}" required>
         </div>
         <div class="mb-3">
+            @if ($book->cover_image)
+    <div class="mb-3">
+        <p><strong>Capa atual:</strong></p>
+        <img src="{{ asset('storage/' . $book->cover_image) }}" width="150" class="rounded mb-2">
+
+        <div class="form-check">
+            <input type="checkbox" name="remove_image" value="1" class="form-check-input">
+            <label class="form-check-label">Remover imagem</label>
+        </div>
+    </div>
+@endif
+
+<div class="mb-3 mt-3">
+    <label class="form-label">Nova capa (opcional)</label>
+    <input type="file" name="cover_image" class="form-control">
+</div>
             <label>Autor</label>
             <input type="text" name="author" class="form-control" value="{{ $book->author }}">
         </div>

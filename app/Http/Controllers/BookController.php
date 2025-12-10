@@ -2,95 +2,104 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Book;
-use App\Models\BookAuthors;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
-    /**
-     * Exibe a lista de todos os livros cadastrados.
-     */
     public function index()
     {
-        $books = Book::orderBy('title', 'asc')->get();
+        $books = Book::orderBy('title')->get();
         return view('books.index', compact('books'));
     }
 
-    /**
-     * Exibe o formulário de criação de um novo livro.
-     */
     public function create()
     {
-        $autor = BookAuthors::all();
-        return view('books.create', compact('autor'));
+        return view('books.create');
     }
 
-    /**
-     * Armazena um novo livro no banco de dados.
-     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'language' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'amount' => 'required|integer|min:0',
+        $request->validate([
+            'title'      => 'required|string|max:255',
+            'author'     => 'required|string|max:255',
+            'category'   => 'required|string|max:255',
+            'language'   => 'required|string|max:255',
+            'amount'     => 'required|integer|min:1',
+            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096'
         ]);
 
-        $validated['status'] = 'disponível';
+        // Upload da imagem
+        $imagePath = null;
 
-        Book::create($validated);
+        if ($request->hasFile('cover_image')) {
+            $imagePath = $request->file('cover_image')->store('covers', 'public');
+        }
 
-        return redirect()->route('books.index')->with('success', 'Livro cadastrado com sucesso!');
+        Book::create([
+            'title'       => $request->title,
+            'author'      => $request->author,
+            'category'    => $request->category,
+            'language'    => $request->language,
+            'amount'      => $request->amount,
+            'cover_image' => $imagePath,
+        ]);
+
+        return redirect()->route('books.index')->with('success', 'Livro criado com sucesso!');
     }
 
-    /**
-     * Exibe o formulário de edição de um livro.
-     */
-    public function edit($id)
+    public function edit(Book $book)
     {
-        $book = Book::findOrFail($id);
         return view('books.edit', compact('book'));
     }
 
-    /**
-     * Atualiza os dados de um livro existente.
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Book $book)
     {
-        $book = Book::findOrFail($id);
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'language' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'amount' => 'required|integer|min:0',
+        $request->validate([
+            'title'      => 'required|string|max:255',
+            'author'     => 'required|string|max:255',
+            'category'   => 'required|string|max:255',
+            'language'   => 'required|string|max:255',
+            'amount'     => 'required|integer|min:1',
+            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096'
         ]);
 
-        $book->update($validated);
+        // Caso clique em "Remover imagem"
+        if ($request->remove_image == "1") {
+            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $book->cover_image = null;
+        }
+
+        // Nova imagem substituindo a anterior
+        if ($request->hasFile('cover_image')) {
+            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+
+            $book->cover_image = $request->file('cover_image')->store('covers', 'public');
+        }
+
+        $book->update([
+            'title'    => $request->title,
+            'author'   => $request->author,
+            'category' => $request->category,
+            'language' => $request->language,
+            'amount'   => $request->amount,
+        ]);
+
+        $book->save();
 
         return redirect()->route('books.index')->with('success', 'Livro atualizado com sucesso!');
     }
 
-    /**
-     * Remove um livro do sistema.
-     */
-    public function destroy($id)
+    public function destroy(Book $book)
     {
-        $book = Book::find($id);
-
-        if (!$book) {
-            return redirect()->route('books.index')->with('error', 'Livro não encontrado.');
-        }
-
-        // Verifica se o livro está emprestado
-        if ($book->status === 'emprestado') {
-            return redirect()->route('books.index')->with('error', 'Não é possível excluir um livro emprestado.');
+        // remover imagem
+        if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+            Storage::disk('public')->delete($book->cover_image);
         }
 
         $book->delete();

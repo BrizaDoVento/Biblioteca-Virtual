@@ -39,6 +39,13 @@
                         <td>{{ $book->language }}</td>
                         <td>{{ $book->status }}</td>
                         <td>
+                            @if($book->cover_image)
+                            <img src="{{ asset('storage/' . $book->cover_image) }}" width="60">
+                            @else
+                            <span class="text-muted">Sem capa</span>
+                            @endif
+                        </td>
+                        <td>
                             <a href="{{ route('books.edit', $book->id) }}" class="btn btn-sm btn-warning">Editar</a>
                             <form action="{{ route('books.destroy', $book->id) }}" method="POST" style="display:inline;">
                                 @csrf

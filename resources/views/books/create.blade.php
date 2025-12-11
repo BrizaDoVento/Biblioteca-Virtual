@@ -16,7 +16,7 @@
             </div>
         @endif
 
-        <form action="{{ route('books.store') }}" method="POST">
+        <form action="{{ route('books.store') }}" method="POST" emctype="multipart/form-data">
             @csrf
             <div class="mb-3">
                 <label>Título</label>

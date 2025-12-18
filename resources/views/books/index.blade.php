@@ -1,62 +1,68 @@
 @extends('layouts.app')
 
-@section('title', 'Livros')
-
 @section('content')
-<div class="container py-4">
-    <h1 class="mb-4 text-center">📚 Livros</h1>
-
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @elseif (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
-    <div class="mb-3 text-end">
-        <a href="{{ route('books.create') }}" class="btn btn-primary">Adicionar Livro</a>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Livros</h2>
+        <a href="{{ route('books.create') }}" class="btn btn-success">+ Novo Livro</a>
     </div>
 
-    @if ($books->isEmpty())
-        <p class="text-center text-muted">Nenhum livro cadastrado.</p>
-    @else
-        <table class="table table-striped align-middle shadow-sm">
-            <thead>
+    <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Capa</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Categoria</th>
+                <th>Idioma</th>
+                <th>Qtd</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse($books as $book)
                 <tr>
-                    <th>Título</th>
-                    <th>Autor</th>
-                    <th>Categoria</th>
-                    <th>Linguagem</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($books as $book)
-                    <tr>
-                        <td>{{ $book->title }}</td>
-                        <td>{{ $book->author }}</td>
-                        <td>{{ $book->category }}</td>
-                        <td>{{ $book->language }}</td>
-                        <td>{{ $book->status }}</td>
-                        <td>
-                            @if($book->cover_image)
-                            <img src="{{ asset('storage/' . $book->cover_image) }}" width="60">
-                            @else
+                    <td style="width: 90px; text-align: center;">
+                        @if($book->image)
+                            <img src="{{ asset('storage/' . $book->image) }}"
+                                 class="img-thumbnail"
+                                 style="width: 60px;">
+                        @else
                             <span class="text-muted">Sem capa</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('books.edit', $book->id) }}" class="btn btn-sm btn-warning">Editar</a>
-                            <form action="{{ route('books.destroy', $book->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
+                        @endif
+                    </td>
+
+                    <td>{{ $book->title }}</td>
+                    <td>{{ $book->author }}</td>
+                    <td>{{ $book->category }}</td>
+                    <td>{{ $book->language }}</td>
+                    <td>{{ $book->amount }}</td>
+
+                    <td>
+                        <a href="{{ route('books.edit', $book->id) }}"
+                           class="btn btn-sm btn-primary">Editar</a>
+
+                        <form action="{{ route('books.destroy', $book->id) }}"
+                              method="POST"
+                              class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Excluir este livro?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        Nenhum livro cadastrado.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
 @endsection

@@ -1,59 +1,49 @@
 @extends('layouts.app')
 
-@section('title', 'Adicionar Livro')
-
 @section('content')
-    <div class="container py-4">
-        <h1 class="mb-4">Adicionar Novo Livro</h1>
+<div class="container mt-4">
+    <h2>Novo Livro</h2>
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $err)
-                        <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
 
-        <form action="{{ route('books.store') }}" method="POST" emctype="multipart/form-data">
-            @csrf
-            <div class="mb-3">
-                <label>Título</label>
-                <input type="text" name="title" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label>Autor</label>
-                {{-- <select class="form-control" name="" id="">
-                    @foreach ($autor as $item)
-                        <option value="{{ $item->id }}">{{ $item->description }}</option>
-                    @endforeach
-                </select> --}}
-                <input type="text" name="author" class="form-control">
-            </div>
-            <div class="mb-3">
-                <label>Categoria</label>
-                <input type="text" name="category" class="form-control">
-            </div>
-            <div class="mb-3">
-                <label>Linguagem</label>
-                <input type="text" name="language" class="form-control">
-            </div>
-            <div class="mb-3">
-                <label>Descrição</label>
-                <textarea name="description" class="form-control"></textarea>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Capa do Livro</label>
-                <input type="file" name="cover_image" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary">Salvar</button>
-            <a href="{{ route('books.index') }}" class="btn btn-secondary">Cancelar</a>
-            <div class="form-group mt-3">
-                <label for="amount">Quantidade disponível:</label>
-                <input type="number" name="amount" id="amount" class="form-control" value="{{ old('amount', 1) }}"
-                    min="0" required>
-            </div>
-        </form>
-    </div>
+        <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" name="title" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Autor</label>
+            <input type="text" name="author" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoria</label>
+            <input type="text" name="category" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Idioma</label>
+            <input type="text" name="language" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descrição</label>
+            <textarea name="description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Quantidade Disponível</label>
+            <input type="number" name="amount" class="form-control" min="1" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Capa do Livro</label>
+            <input type="file" name="image" class="form-control" accept="image/*">
+        </div>
+
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{{ route('books.index') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
 @endsection
